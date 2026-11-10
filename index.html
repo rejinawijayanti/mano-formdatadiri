@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MANO AGRI NUSANTARA — Data Pribadi Karyawan</title>
+<meta name="theme-color" content="#1d4ed8">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+  html,body{margin:0;height:100%;background:#f8fafc;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  iframe{position:fixed;inset:0;width:100%;height:100%;border:0;padding-top:env(safe-area-inset-top)}
+  #install{position:fixed;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:10;background:#1d4ed8;color:#fff;border:0;border-radius:999px;padding:10px 16px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.25);display:none;cursor:pointer}
+  #ios{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:11;background:#fff;border:1px solid #cbd5e1;border-radius:12px;padding:12px 14px;font-size:14px;display:none;box-shadow:0 6px 18px rgba(0,0,0,.2)}
+  #off{position:fixed;inset:0;background:#f8fafc;display:none;place-items:center;text-align:center;padding:24px;z-index:20}
+</style>
+</head>
+<body>
+<iframe id="app" title="Aplikasi" allow="camera; clipboard-write"></iframe>
+<button id="install" type="button">⬇ Pasang Aplikasi</button>
+<div id="ios">Untuk memasang di iPhone: ketuk <b>Bagikan</b> lalu <b>Tambah ke Layar Utama</b>. <button id="ios-x" style="float:right;border:0;background:none;font-size:18px">×</button></div>
+<div id="off"><div><h2>Anda sedang offline</h2><p>Sambungkan internet lalu muat ulang untuk mengisi atau mengelola formulir.</p><button onclick="location.reload()">Muat Ulang</button></div></div>
+<script src="./config.js"></script>
+<script>
+  const f = document.getElementById('app');
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  function muat() { if (!navigator.onLine) { document.getElementById('off').style.display = 'grid'; return; } document.getElementById('off').style.display = 'none'; f.src = window.GAS_URL; }
+  window.addEventListener('online', muat); window.addEventListener('offline', muat); muat();
+
+  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(console.error));
+
+  let dp; const bi = document.getElementById('install');
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); dp = e; if (!standalone) bi.style.display = 'block'; });
+  bi.onclick = async () => { if (!dp) return; dp.prompt(); await dp.userChoice; dp = null; bi.style.display = 'none'; };
+  window.addEventListener('appinstalled', () => { bi.style.display = 'none'; });
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (ios && !standalone && !localStorage.getItem('ios_hint')) { document.getElementById('ios').style.display = 'block'; }
+  document.getElementById('ios-x').onclick = () => { document.getElementById('ios').style.display = 'none'; try { localStorage.setItem('ios_hint', '1'); } catch (e) {} };
+</script>
+</body>
+</html>
